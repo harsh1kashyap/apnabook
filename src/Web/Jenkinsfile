@@ -1,0 +1,57 @@
+﻿using Microsoft.Extensions.Hosting;
+
+pipeline {
+    agent any
+
+    environment {
+        DOTNET_ROOT = "C:\\Program Files\\dotnet"
+        PATH = "${env.PATH};${env.DOTNET_ROOT}"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git url: 'https://github.com/harsh1kashyap/apnabook.git', branch: 'main'
+            }
+        }
+
+        stage('Restore Dependencies') {
+    steps {
+        bat 'dotnet restore'
+            }
+}
+
+stage('Build Project') {
+    steps {
+        bat 'dotnet build --configuration Release'
+            }
+}
+
+stage('Run Tests') {
+    steps {
+        bat 'dotnet test --no-build --verbosity normal'
+            }
+}
+
+stage('Publish Artifacts') {
+    steps {
+        bat 'dotnet publish -c Release -o published'
+            }
+}
+
+stage('Show Publish Output') {
+    steps {
+        bat 'dir published'
+            }
+}
+    }
+
+    post {
+        failure {
+            echo "❌ Build pipeline failed. Please check the logs."
+        }
+        success {
+            echo "✅ Build pipeline completed successfully."
+        }
+    }
+}
